@@ -16,6 +16,7 @@ const PropertyDetailsPage = () => {
   const { id } = useParams();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showRemainingMonths, setShowRemainingMonths] = useState(false);
 
   useEffect(() => {
     axios
@@ -39,6 +40,10 @@ const PropertyDetailsPage = () => {
       });
   }, [id]);
 
+  const handleShowData = () => {
+    setShowRemainingMonths(true);
+  };
+
   if (loading) {
     return <p>Loading property details...</p>;
   }
@@ -47,7 +52,7 @@ const PropertyDetailsPage = () => {
     return <p>Property not found</p>;
   }
 
-  const priceData = [
+  let priceData = [
     {
       name: "Mar23",
       locality: property.locality_price_Mar23,
@@ -115,6 +120,28 @@ const PropertyDetailsPage = () => {
     },
   ];
 
+  // If showRemainingMonths is true, add the remaining 3 months to the priceData array
+  if (showRemainingMonths) {
+    priceData = [
+      ...priceData,
+      {
+        name: "Apr24",
+        locality: property.locality_price_Apr24,
+        property: property.property_price_Apr24,
+      },
+      {
+        name: "May24",
+        locality: property.locality_price_May24,
+        property: property.property_price_May24,
+      },
+      {
+        name: "Jun24",
+        locality: property.locality_price_June24,
+        property: property.property_price_June24,
+      },
+    ];
+  }
+
   return (
     <div>
       <h1>{property.property || "Property Name"}</h1>
@@ -125,11 +152,14 @@ const PropertyDetailsPage = () => {
       <p>{property.address || "Address"}</p>
       <p>{property.current_price || "Price"}</p>
 
+      <button onClick={handleShowData}>Predict</button>
+
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={priceData}>
           <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.5} />
           <XAxis dataKey="name" stroke="#666" />
-          <YAxis stroke="#666" />
+          <YAxis domain={["auto", "auto"]} stroke="#666" />{" "}
+          {/* Automatically determine domain for Y-axis */}
           <Tooltip />
           <Legend />
           <Line
@@ -151,9 +181,7 @@ const PropertyDetailsPage = () => {
             stroke="#33FF57"
             strokeWidth={2}
             dot={{
-              stroke
-
-: "#33FF57",
+              stroke: "#33FF57",
               strokeWidth: 2,
               fill: "#FFF",
               fillOpacity: 0.8,
